@@ -13,6 +13,6 @@ router.include_router(read_dialog)
 
 @router.message(Command("show_tasks"))
 async def show_tasks(
-    message: Message, dialog_manager: DialogManager, state: FSMContext
+    message: Message, dialog_manager: DialogManager, state: FSMContext,
 ):
     await dialog_manager.start(state=ReadState.read, mode=StartMode.RESET_STACK)

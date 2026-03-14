@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int
 
     model_config = SettingsConfigDict(
-        env_file="../.env.django", env_file_encoding="utf-8"
+        env_file="../.env.django", env_file_encoding="utf-8",
     )
 
 

@@ -17,7 +17,7 @@ choose_task_window = Window(
             items="tasks",
             item_id_getter=lambda item: str(item["pk"]),
             on_click=choose_task_handler,
-        )
+        ),
     ),
     Button(Const("Cancel"), id="cancel", on_click=cancel_handler),
     state=DeleteStates.choose_task,

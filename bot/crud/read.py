@@ -28,11 +28,11 @@ async def prepare_message(access: str, refresh: str, state):
     for i in range(len(data)):
         title = data[i]["title"]
         deadline = datetime.fromisoformat(data[i]["deadline"]).strftime(
-            "%d.%m.%Y %H:%M"
+            "%d.%m.%Y %H:%M",
         )
         body = data[i]["body"]
         created_at = datetime.fromisoformat(data[i]["created_at"]).strftime(
-            "%d.%m.%Y %H:%M"
+            "%d.%m.%Y %H:%M",
         )
         category = data[i]["category"]
         message_for_user += [
@@ -41,13 +41,13 @@ async def prepare_message(access: str, refresh: str, state):
                 f"{markdown.hbold('Body')}: $body \n"
                 f"{markdown.hbold('Deadline')}: $deadline\n"
                 f"{markdown.hbold('Created_at')}: $created_at\n"
-                f"{markdown.hbold('Category')}: $category\n"
+                f"{markdown.hbold('Category')}: $category\n",
             ).substitute(
                 title=title,
                 deadline=deadline,
                 body=body,
                 created_at=created_at,
                 category=category,
-            )
+            ),
         ]
     return message_for_user

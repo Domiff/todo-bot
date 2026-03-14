@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 async def confirm_registration(
-    callback: CallbackQuery, button, dialog_manager: DialogManager
+    callback: CallbackQuery, button, dialog_manager: DialogManager,
 ) -> None:
     user = callback.from_user
     data = await register(user)
@@ -25,6 +25,6 @@ async def confirm_registration(
         f"{markdown.hcode('/show_tasks')}\n"
         f"{markdown.hcode('/create_task')}\n"
         f"{markdown.hcode('/update_task')}\n"
-        f"{markdown.hcode('/delete_task')}\n"
+        f"{markdown.hcode('/delete_task')}\n",
     )
     await dialog_manager.done()

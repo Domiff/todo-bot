@@ -21,7 +21,7 @@ redis = Redis(
 key_builder = DefaultKeyBuilder(with_destiny=True)
 storage = RedisStorage(redis, key_builder=key_builder)
 bot = Bot(
-    token=settings.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+    token=settings.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML),
 )
 dp = Dispatcher(storage=storage)
 

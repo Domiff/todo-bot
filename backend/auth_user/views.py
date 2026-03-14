@@ -3,15 +3,15 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from .serializers import ProfileSerializer
+from .serializers import TgProfileSerializer
 
 
-class RegisterAPIView(CreateAPIView):
-    serializer_class = ProfileSerializer
+class TgRegisterAPIView(CreateAPIView):
+    serializer_class = TgProfileSerializer
     permission_classes = (AllowAny,)
 
     async def create(self, request, *args, **kwargs):
-        serializer = ProfileSerializer(data=request.data)
+        serializer = TgProfileSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         data = await serializer.ato_representation(user)

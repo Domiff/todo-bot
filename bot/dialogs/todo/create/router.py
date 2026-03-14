@@ -13,6 +13,6 @@ router.include_router(create_dialog)
 
 @router.message(Command("create_task"))
 async def create_task_command(
-    message: Message, dialog_manager: DialogManager, state: FSMContext
+    message: Message, dialog_manager: DialogManager, state: FSMContext,
 ):
     await dialog_manager.start(state=CreateStates.title, mode=StartMode.RESET_STACK)

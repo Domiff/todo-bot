@@ -13,8 +13,8 @@ router.include_router(delete_dialog)
 
 @router.message(Command("delete_task"))
 async def delete_task_command(
-    message: Message, dialog_manager: DialogManager, state: FSMContext
+    message: Message, dialog_manager: DialogManager, state: FSMContext,
 ):
     await dialog_manager.start(
-        state=DeleteStates.choose_task, mode=StartMode.RESET_STACK
+        state=DeleteStates.choose_task, mode=StartMode.RESET_STACK,
     )

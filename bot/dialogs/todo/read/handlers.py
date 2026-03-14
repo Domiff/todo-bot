@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 async def get_tasks_handler(
-    callback: CallbackQuery, button, dialog_manager: DialogManager
+    callback: CallbackQuery, button, dialog_manager: DialogManager,
 ) -> None:
     state: FSMContext = dialog_manager.middleware_data["state"]
     data = await state.get_data()

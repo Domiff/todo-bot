@@ -99,7 +99,7 @@ async def confirm_handler(
     if dialog_manager.dialog_data.get("deadline"):
         deadline = (
             datetime.strptime(
-                dialog_manager.dialog_data.get("deadline"), "%d.%m.%Y %H:%M"
+                dialog_manager.dialog_data.get("deadline"), "%d.%m.%Y %H:%M",
             ).isoformat()
             if True
             else None

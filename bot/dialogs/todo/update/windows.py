@@ -25,7 +25,7 @@ choose_task_window = Window(
             items="tasks",
             item_id_getter=lambda item: str(item["pk"]),
             on_click=choose_task_handler,
-        )
+        ),
     ),
     Button(Const("Cancel"), id="cancel", on_click=cancel_handler),
     state=UpdateState.choose_task,
@@ -59,7 +59,7 @@ body_window = Window(
 
 deadline_window = Window(
     Const(
-        "Enter a new deadline in format DD.MM.YYYY HH:MM or confirm to update the data:"
+        "Enter a new deadline in format DD.MM.YYYY HH:MM or confirm to update the data:",
     ),
     TextInput(id="task_deadline", on_success=edit_deadline_handler),
     Button(Const("Confirm updates"), id="confirm_deadline", on_click=confirm_handler),

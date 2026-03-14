@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "todo.apps.TodoConfig",
-    "tg_auth.apps.TgAuthConfig",
+    "auth_user.apps.AuthUserConfig",
     "rest_framework_simplejwt",
     "adrf",
     "drf_spectacular",
@@ -91,7 +91,7 @@ DATABASES = {
         "PASSWORD": settings.POSTGRES_PASSWORD,
         "HOST": settings.POSTGRES_HOST,
         "PORT": settings.POSTGRES_PORT,
-    }
+    },
 }
 
 
@@ -183,7 +183,7 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {"format": "%(asctime)s - %(levelname)s - %(name)s - %(message)s"}
+        "verbose": {"format": "%(asctime)s - %(levelname)s - %(name)s - %(message)s"},
     },
     "handlers": {
         "console": {"class": "logging.StreamHandler", "formatter": "verbose"},

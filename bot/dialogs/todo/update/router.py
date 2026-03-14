@@ -13,8 +13,8 @@ router.include_router(update_dialog)
 
 @router.message(Command("update_task"))
 async def update_router(
-    message: Message, dialog_manager: DialogManager, state: FSMContext
+    message: Message, dialog_manager: DialogManager, state: FSMContext,
 ):
     await dialog_manager.start(
-        state=UpdateState.choose_task, mode=StartMode.RESET_STACK
+        state=UpdateState.choose_task, mode=StartMode.RESET_STACK,
     )

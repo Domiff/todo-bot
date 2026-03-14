@@ -12,6 +12,6 @@ async def create_task(access: str, refresh: str, state: FSMContext, task: dict):
         if code == 401:
             headers = await check_token(refresh, state)
             data = await client.post(
-                urls_dict.get("create"), headers=headers, data=task
+                urls_dict.get("create"), headers=headers, data=task,
             )
         return data

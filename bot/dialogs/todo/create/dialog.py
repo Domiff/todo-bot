@@ -9,5 +9,5 @@ from .windows import (
 )
 
 create_dialog = Dialog(
-    title_window, body_window, category_window, deadline_window, confirm_window
+    title_window, body_window, category_window, deadline_window, confirm_window,
 )

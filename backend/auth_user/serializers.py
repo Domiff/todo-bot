@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import TgProfile
 
 
-class ProfileSerializer(Serializer):
+class TgProfileSerializer(Serializer):
     tg_id = serializers.IntegerField()
     username = serializers.CharField()
     first_name = serializers.CharField()
@@ -23,7 +23,7 @@ class ProfileSerializer(Serializer):
             user = tg_profile.user
         else:
             user = await User.objects.acreate_user(username=f"tg-{tg_id}")
-            tg_profile = await TgProfile.objects.acreate(user=user, **validated_data)
+            await TgProfile.objects.acreate(user=user, **validated_data)
         return user
 
     async def ato_representation(self, user):
