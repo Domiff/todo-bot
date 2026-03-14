@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('auth_user', '0001_initial'),
+        ("auth_user", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tgprofile',
-            name='tg_id',
+            model_name="tgprofile",
+            name="tg_id",
             field=models.BigIntegerField(unique=True),
         ),
     ]

@@ -46,7 +46,9 @@ class WebProfileSerializer(Serializer):
     async def acreate(self, validated_data):
         username = validated_data["username"]
         web_profile = (
-            await WebProfile.objects.filter(username=username).select_related("user").afirst()
+            await WebProfile.objects.filter(username=username)
+            .select_related("user")
+            .afirst()
         )
 
         if web_profile:

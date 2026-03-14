@@ -6,27 +6,45 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('auth_user', '0002_alter_tgprofile_tg_id'),
+        ("auth_user", "0002_alter_tgprofile_tg_id"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tgprofile',
-            name='user',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='tg_profile', to=settings.AUTH_USER_MODEL),
+            model_name="tgprofile",
+            name="user",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="tg_profile",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.CreateModel(
-            name='WebProfile',
+            name="WebProfile",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('username', models.CharField(max_length=255, unique=True)),
-                ('email', models.EmailField(max_length=255, unique=True)),
-                ('first_name', models.CharField(max_length=255)),
-                ('last_name', models.CharField(max_length=255)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='web_profile', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("username", models.CharField(max_length=255, unique=True)),
+                ("email", models.EmailField(max_length=255, unique=True)),
+                ("first_name", models.CharField(max_length=255)),
+                ("last_name", models.CharField(max_length=255)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="web_profile",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]
