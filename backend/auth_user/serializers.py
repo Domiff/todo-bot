@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import TgProfile
+from .models import TgProfile, WebProfile
 
 
 class TgProfileSerializer(Serializer):
@@ -24,6 +24,36 @@ class TgProfileSerializer(Serializer):
         else:
             user = await User.objects.acreate_user(username=f"tg-{tg_id}")
             await TgProfile.objects.acreate(user=user, **validated_data)
+        return user
+
+    async def ato_representation(self, user):
+        tokens = await sync_to_async(RefreshToken.for_user)(user)
+        return {
+            "id": user.id,
+            "tokens": {
+                "refresh": str(tokens),
+                "access": str(tokens.access_token),
+            },
+        }
+
+
+class WebProfileSerializer(Serializer):
+    email = serializers.EmailField()
+    username = serializers.CharField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+
+    async def acreate(self, validated_data):
+        username = validated_data["username"]
+        web_profile = (
+            await WebProfile.objects.filter(username=username).select_related("user").afirst()
+        )
+
+        if web_profile:
+            user = web_profile.user
+        else:
+            user = await User.objects.acreate_user(username=username)
+            await WebProfile.objects.acreate(user=user, **validated_data)
         return user
 
     async def ato_representation(self, user):

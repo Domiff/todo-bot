@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from .serializers import TgProfileSerializer
+from .serializers import TgProfileSerializer, WebProfileSerializer
 
 
 class TgRegisterAPIView(CreateAPIView):
@@ -12,6 +12,18 @@ class TgRegisterAPIView(CreateAPIView):
 
     async def create(self, request, *args, **kwargs):
         serializer = TgProfileSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        data = await serializer.ato_representation(user)
+        return Response(data, status=status.HTTP_201_CREATED)
+
+
+class WebRegisterAPIView(CreateAPIView):
+    serializer_class = WebProfileSerializer
+    permission_classes = (AllowAny,)
+
+    async def create(self, request, *args, **kwargs):
+        serializer = WebProfileSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         data = await serializer.ato_representation(user)
