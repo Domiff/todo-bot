@@ -7,11 +7,24 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import TgProfile, WebProfile
 
 
-class TgProfileSerializer(Serializer):
-    tg_id = serializers.IntegerField()
+class BaseProfileSerializer(Serializer):
     username = serializers.CharField()
     first_name = serializers.CharField()
     last_name = serializers.CharField()
+
+    async def ato_representation(self, user):
+        tokens = await sync_to_async(RefreshToken.for_user)(user)
+        return {
+            "id": user.id,
+            "tokens": {
+                "refresh": str(tokens),
+                "access": str(tokens.access_token),
+            },
+        }
+
+
+class TgProfileSerializer(BaseProfileSerializer):
+    tg_id = serializers.IntegerField()
 
     async def acreate(self, validated_data):
         tg_id = validated_data["tg_id"]
@@ -26,22 +39,9 @@ class TgProfileSerializer(Serializer):
             await TgProfile.objects.acreate(user=user, **validated_data)
         return user
 
-    async def ato_representation(self, user):
-        tokens = await sync_to_async(RefreshToken.for_user)(user)
-        return {
-            "id": user.id,
-            "tokens": {
-                "refresh": str(tokens),
-                "access": str(tokens.access_token),
-            },
-        }
 
-
-class WebProfileSerializer(Serializer):
+class WebProfileSerializer(BaseProfileSerializer):
     email = serializers.EmailField()
-    username = serializers.CharField()
-    first_name = serializers.CharField()
-    last_name = serializers.CharField()
 
     async def acreate(self, validated_data):
         username = validated_data["username"]
@@ -57,13 +57,3 @@ class WebProfileSerializer(Serializer):
             user = await User.objects.acreate_user(username=username)
             await WebProfile.objects.acreate(user=user, **validated_data)
         return user
-
-    async def ato_representation(self, user):
-        tokens = await sync_to_async(RefreshToken.for_user)(user)
-        return {
-            "id": user.id,
-            "tokens": {
-                "refresh": str(tokens),
-                "access": str(tokens.access_token),
-            },
-        }
