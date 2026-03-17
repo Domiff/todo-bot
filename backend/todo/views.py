@@ -59,5 +59,6 @@ class TodoDeleteView(DestroyAPIView):
     async def delete(self, request, pk):
         await Task.objects.filter(creator=self.request.user, pk=pk).adelete()
         return Response(
-            data={"msg": "Task was deleted"}, status=status.HTTP_204_NO_CONTENT,
+            data={"msg": "Task was deleted"},
+            status=status.HTTP_204_NO_CONTENT,
         )

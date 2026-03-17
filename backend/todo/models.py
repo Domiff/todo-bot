@@ -21,7 +21,9 @@ class Task(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     deadline = models.DateTimeField()
     category = models.ForeignKey(
-        Category, on_delete=models.CASCADE, related_name="tasks",
+        Category,
+        on_delete=models.CASCADE,
+        related_name="tasks",
     )
 
     class Meta:
