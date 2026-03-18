@@ -42,9 +42,11 @@ class TgProfileSerializer(BaseProfileSerializer):
 
 class WebProfileSerializer(BaseProfileSerializer):
     email = serializers.EmailField()
+    password = serializers.CharField()
 
     async def acreate(self, validated_data):
         username = validated_data["username"]
+        password = validated_data.pop("password")
         web_profile = (
             await WebProfile.objects.filter(username=username)
             .select_related("user")
@@ -54,6 +56,6 @@ class WebProfileSerializer(BaseProfileSerializer):
         if web_profile:
             user = web_profile.user
         else:
-            user = await User.objects.acreate_user(username=username)
+            user = await User.objects.acreate_user(username=username, password=password)
             await WebProfile.objects.acreate(user=user, **validated_data)
         return user
