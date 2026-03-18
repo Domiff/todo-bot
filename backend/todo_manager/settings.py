@@ -91,6 +91,11 @@ DATABASES = {
         "PASSWORD": settings.POSTGRES_PASSWORD,
         "HOST": settings.POSTGRES_HOST,
         "PORT": settings.POSTGRES_PORT,
+    }
+    if not DEBUG
+    else {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     },
 }
 
