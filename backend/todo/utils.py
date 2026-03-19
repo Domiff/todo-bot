@@ -1,0 +1,10 @@
+from django.http import Http404
+
+from .models import Task
+
+
+async def get_valid_task_or_exec(user, pk):
+    task = await Task.objects.filter(creator=user, pk=pk).afirst()
+    if not task:
+        raise Http404
+    return task
