@@ -13,7 +13,7 @@ from .serializers import (
     TaskListSerializer,
     TaskUpdateSerializer,
 )
-from .utils import get_valid_task_or_exec
+from .utils import get_valid_task_or_404
 
 
 class TodoListView(ListAPIView):
@@ -29,7 +29,7 @@ class TodoDetailView(RetrieveAPIView):
     queryset = Task.objects.all()
 
     async def aget_object(self):
-        return await get_valid_task_or_exec(user=self.request.user, pk=self.kwargs["pk"])
+        return await get_valid_task_or_404(user=self.request.user, pk=self.kwargs["pk"])
 
 
 class TodoCreateView(CreateAPIView):
@@ -42,11 +42,11 @@ class TodoUpdateView(UpdateAPIView):
     queryset = Task.objects.all()
 
     async def aget_object(self):
-        return await get_valid_task_or_exec(user=self.request.user, pk=self.kwargs["pk"])
+        return await get_valid_task_or_404(user=self.request.user, pk=self.kwargs["pk"])
 
 
 class TodoDeleteView(DestroyAPIView):
     queryset = Task.objects.all()
 
     async def aget_object(self):
-        return await get_valid_task_or_exec(user=self.request.user, pk=self.kwargs["pk"])
+        return await get_valid_task_or_404(user=self.request.user, pk=self.kwargs["pk"])
