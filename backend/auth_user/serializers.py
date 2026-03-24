@@ -57,6 +57,8 @@ class WebProfileSerializer(BaseProfileSerializer):
         if web_profile:
             user = web_profile.user
         else:
-            user = await User.objects.acreate_user(username=username, password=password, email=email)
+            user = await User.objects.acreate_user(
+                username=username, password=password, email=email,
+            )
             await WebProfile.objects.acreate(user=user, **validated_data)
         return user
