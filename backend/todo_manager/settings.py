@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ["127.0.0.1", "0.0.0.0", "backend"]
 # Application definition
 
 INSTALLED_APPS = [
+    "unfold",
     "daphne",
     "django.contrib.admin",
     "django.contrib.auth",

@@ -1,16 +1,17 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin
 
 from .models import Category, Task
 
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ("urgency",)
+class CategoryAdmin(ModelAdmin):
+    list_display = ["urgency"]
 
 
 @admin.register(Task)
-class TaskAdmin(admin.ModelAdmin):
-    list_display = (
+class TaskAdmin(ModelAdmin):
+    list_display = [
         "creator",
         "title",
         "completed",
@@ -18,8 +19,8 @@ class TaskAdmin(admin.ModelAdmin):
         "updated_at",
         "deadline",
         "category",
-    )
-    list_editable = (
+    ]
+    list_editable = [
         "title",
         "completed",
-    )
+    ]

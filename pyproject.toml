@@ -25,6 +25,7 @@ backend = [
     "asyncpg>=0.31.0",
     "daphne>=4.2.1",
     "drf-spectacular>=0.29.0",
+    "django-unfold>=0.86.1",
 ]
 
 bot = [
