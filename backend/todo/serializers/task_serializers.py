@@ -50,4 +50,4 @@ class TaskCreateSerializer(TaskBaseSerializer):
 
 class TaskUpdateSerializer(TaskBaseSerializer):
     class Meta(TaskBaseSerializer.Meta):
-        fields = TaskBaseSerializer.Meta.fields + ("body", "deadline", "completed")
+        fields = TaskBaseSerializer.Meta.fields + ("body", "deadline", "completed", "pk")
