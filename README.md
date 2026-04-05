@@ -13,14 +13,14 @@ A full-stack task manager: a **Django REST API** backs a **Telegram bot** built 
 ## Tech stack
 
 
-| Layer        | Technologies                                                       |
-| ------------ | ------------------------------------------------------------------ |
-| API          | Django 6, Django REST Framework, async views (adrf), Daphne (ASGI) |
-| Auth         | djangorestframework-simplejwt                                      |
-| Database     | PostgreSQL (Docker / production-style); SQLite when `DEBUG=True`   |
-| Bot          | Aiogram 3, aiogram-dialog, Redis (FSM)                             |
-| Tooling      | uv, Ruff, pre-commit                                               |
-| Optional ops | Docker Compose: Grafana, Loki, Promtail (logs/metrics plumbing)    |
+| Layer          | Technologies                                                                 |
+| -------------- | ---------------------------------------------------------------------------- |
+| API            | Django 6, Django REST Framework, async views (adrf), Daphne (ASGI)           |
+| Auth           | djangorestframework-simplejwt                                                |
+| Database       | PostgreSQL (Docker / production-style); SQLite when `DEBUG=True`             |
+| Bot            | Aiogram 3, aiogram-dialog, Redis (FSM)                                       |
+| Tooling        | uv, Ruff, pre-commit                                                         |
+| Infrastructure | Docker Compose: Grafana, Loki, Promtail (logs/metrics plumbing)              |
 
 
 ## Application structure
@@ -124,24 +124,24 @@ Create two env files at the **repository root** (they are gitignored; do not com
 ### `.env.django`
 
 
-| Variable                                            | Purpose                                                                     |
-| --------------------------------------------------- | --------------------------------------------------------------------------- |
-| `DJANGO_SECRET_KEY`                                 | Django secret                                                               |
-| `DJANGO_DEBUG`                                      | `True` for local dev (uses SQLite); `False` uses Postgres settings below    |
-| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | Postgres credentials                                                        |
-| `POSTGRES_HOST`, `POSTGRES_PORT`                    | e.g. `pg` and `5432` in Compose; `127.0.0.1` when Postgres runs on the host |
+| Variable                                            | Purpose                                                                       |
+| --------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `DJANGO_SECRET_KEY`                                 | Django secret                                                                 |
+| `DJANGO_DEBUG`                                      | `True` for local dev (uses SQLite); `False` uses Postgres settings below      |
+| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | Postgres credentials                                                          |
+| `POSTGRES_HOST`, `POSTGRES_PORT`                    | e.g. `pg` and `5432` in Compose; `127.0.0.1` when Postgres runs on the host     |
 
 
 ### `.env.bot`
 
 
-| Variable                               | Purpose                                                                                    |
-| -------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Variable                               | Purpose                                                                                      |
+| -------------------------------------- | -------------------------------------------------------------------------------------------- |
 | `BOT_TOKEN`                            | Telegram bot token from [@BotFather](https://t.me/BotFather)                               |
-| `REDIS_HOST`, `REDIS_PORT`, `REDIS_DB` | Redis for FSM (e.g. `redis`, `6379`, `0` in Compose)                                       |
-| `BASE_URL`                             | API origin with trailing slash (e.g. `http://backend:8000/` in Docker)                     |
-| `READ`, `CREATE`, `UPDATE`, `DELETE`   | Path segments under the API (default `api/list/`, `api/create/`, …)                        |
-| `REGISTER`, `REFRESH`                  | Auth path segments (must match backend routes, e.g. `auth/tg/register/`, `token/refresh/`) |
+| `REDIS_HOST`, `REDIS_PORT`, `REDIS_DB` | Redis for FSM (e.g. `redis`, `6379`, `0` in Compose)                                         |
+| `BASE_URL`                             | API origin with trailing slash (e.g. `http://backend:8000/` in Docker)                        |
+| `READ`, `CREATE`, `UPDATE`, `DELETE`   | Path segments under the API (default `api/list/`, `api/create/`, …)                          |
+| `REGISTER`, `REFRESH`                  | Auth path segments (must match backend routes, e.g. `auth/tg/register/`, `token/refresh/`)     |
 
 
 Paths are concatenated with `BASE_URL`; keep trailing slashes consistent with the Django URLconf.
@@ -177,15 +177,15 @@ docker compose up --build
 Typical ports:
 
 
-| Service          | Port       | Notes                                                                       |
-| ---------------- | ---------- | --------------------------------------------------------------------------- |
-| Backend (Daphne) | 8000       | ASGI                                                                        |
-| Postgres         | 5432       | Persisted volume `pgdata`                                                   |
-| Redis            | (internal) | Bot dependency                                                              |
-| Bot              | 8080       | Exposed in compose (adjust if unused)                                       |
-| Grafana          | 3000       | Default admin user/password in `docker-compose.yml` (change for production) |
-| Loki             | 3100       | Log aggregation                                                             |
-| Promtail         | 9080       | Log shipping                                                                |
+| Service          | Port       | Notes                                                                        |
+| ---------------- | ---------- | ---------------------------------------------------------------------------- |
+| Backend (Daphne) | 8000       | ASGI                                                                         |
+| Postgres         | 5432       | Persisted volume `pgdata`                                                    |
+| Redis            | (internal) | Bot dependency                                                               |
+| Bot              | 8080       | Exposed in compose (adjust if unused)                                        |
+| Grafana          | 3000       | Default admin user/password in `docker-compose.yml` (change for production)  |
+| Loki             | 3100       | Log aggregation                                                              |
+| Promtail         | 9080       | Log shipping                                                                 |
 
 
 Ensure `.env.django` points `POSTGRES_HOST` to `pg` and `.env.bot` uses `REDIS_HOST=redis` and a `BASE_URL` reachable from the bot container (e.g. `http://backend:8000/`).
@@ -195,10 +195,10 @@ Ensure `.env.django` points `POSTGRES_HOST` to `pg` and `.env.bot` uses `REDIS_H
 Base URL prefix: `/api/` for tasks, `/auth/` for registration and tokens.
 
 
-| Area  | Example paths                                                                                                                     |
-| ----- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Tasks | `GET api/list/`, `GET api/list/<id>`, `POST api/create/`, `PUT/PATCH api/update/<id>`, `DELETE api/delete/<id>`                   |
-| Auth  | `POST auth/tg/register/`, `POST auth/web/register/`, `POST auth/token/`, `POST auth/token/refresh/`, `POST auth/token/blacklist/` |
+| Area  | Example paths                                                                                                                                 |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tasks | `GET api/list/`, `GET api/list/<id>`, `POST api/create/`, `PUT/PATCH api/update/<id>`, `DELETE api/delete/<id>`                               |
+| Auth  | `POST auth/tg/register/`, `POST auth/web/register/`, `POST auth/token/`, `POST auth/token/refresh/`, `POST auth/token/blacklist/`             |
 
 
 Interactive documentation:
