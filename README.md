@@ -23,14 +23,92 @@ A full-stack task manager: a **Django REST API** backs a **Telegram bot** built 
 | Optional ops | Docker Compose: Grafana, Loki, Promtail (logs/metrics plumbing)    |
 
 
-## Repository layout
+## Application structure
 
+### Architecture
+
+```mermaid
+flowchart TB
+    subgraph client["Client"]
+        TG[Telegram users]
+    end
+
+    subgraph bot_layer["Bot layer"]
+        B[Aiogram + aiogram-dialog]
+        R[(Redis — FSM storage)]
+        B <--> R
+    end
+
+    subgraph api_layer["API layer"]
+        D[Django / DRF + adrf]
+        J[JWT]
+        D --- J
+    end
+
+    subgraph data["Data"]
+        PG[(PostgreSQL)]
+        SQ[(SQLite — DEBUG only)]
+    end
+
+    TG <--> B
+    B -->|HTTP / JSON| D
+    D --> PG
+    D -.-> SQ
 ```
-backend/          # Django project (todo_manager, apps: todo, auth_user)
-bot/              # Telegram bot package
-grafana/          # Grafana datasource provisioning
-docker-compose.yml
-pyproject.toml    # Dependencies (dependency groups: backend, bot, dev)
+
+### Repository tree
+
+```text
+.
+├── backend/
+│   ├── Dockerfile
+│   ├── manage.py
+│   ├── todo_manager/                 # Django project (settings, routing, ASGI)
+│   │   ├── asgi.py
+│   │   ├── config.py                 # env-driven settings (pydantic)
+│   │   ├── settings.py
+│   │   ├── urls.py                   # mounts /api/, /auth/, /admin/, /schema/
+│   │   └── wsgi.py
+│   ├── todo/                         # Tasks & categories
+│   │   ├── migrations/
+│   │   ├── serializers/
+│   │   ├── models.py
+│   │   ├── urls.py
+│   │   ├── utils.py
+│   │   └── views.py                  # async list/detail CRUD (adrf)
+│   └── auth_user/                    # Registration & JWT-facing views
+│       ├── migrations/
+│       ├── admin.py
+│       ├── models.py                 # TgProfile, WebProfile
+│       ├── serializers.py
+│       ├── urls.py
+│       └── views.py
+│
+├── bot/
+│   ├── Dockerfile
+│   ├── main.py                       # Dispatcher, Redis storage, routers
+│   ├── config.py
+│   ├── api/
+│   │   ├── client.py                 # aiohttp client + auth helpers
+│   │   └── urls.py                   # backend path segments from env
+│   ├── crud/                         # Thin wrappers over API (create/read/update/delete)
+│   ├── dialogs/
+│   │   ├── registration/             # Sign-up dialog (handlers, windows, states)
+│   │   └── todo/                     # Task CRUD dialogs by feature folder
+│   │       ├── create/
+│   │       ├── read/
+│   │       ├── update/
+│   │       ├── delete/
+│   │       ├── getters.py
+│   │       └── router.py
+│   └── register/
+│
+├── grafana/                          # Datasource provisioning (Compose)
+├── docker-compose.yml
+├── loki-config.yml
+├── promtail-config.yml
+├── pyproject.toml                    # uv dependency groups: backend, bot, dev
+└── uv.lock
 ```
 
 ## Requirements
