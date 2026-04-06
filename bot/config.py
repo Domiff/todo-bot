@@ -8,12 +8,6 @@ class Settings(BaseSettings):
     REDIS_DB: int
 
     BASE_URL: str
-    READ: str
-    CREATE: str
-    UPDATE: str
-    DELETE: str
-    REGISTER: str
-    REFRESH: str
 
     model_config = SettingsConfigDict(env_file="../.env.bot", env_file_encoding="utf-8")
 
