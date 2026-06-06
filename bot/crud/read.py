@@ -4,18 +4,18 @@ from string import Template
 from aiogram.fsm.context import FSMContext
 from aiogram.utils import markdown
 
-from bot.api import ApiClient, urls_dict
+from bot.api import ApiClient, Urls
 from bot.crud.utils import check_token
 
 
 async def get_tasks(access: str, refresh: str, state: FSMContext):
     headers = {"Authorization": f"Bearer {access}"}
-    async with ApiClient(urls_dict.get("base_url")) as client:
-        data = await client.get(urls_dict.get("read"), headers=headers)
+    async with ApiClient(Urls.BASE_URL) as client:
+        data = await client.get(Urls.READ, headers=headers)
         code = data[1]
         if code == 401 or not data:
             headers = await check_token(refresh, state)
-        data = await client.get(urls_dict.get("read"), headers=headers)
+        data = await client.get(Urls.READ, headers=headers)
         return data[0]
 
 

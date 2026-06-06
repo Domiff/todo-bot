@@ -1,11 +1,11 @@
 from aiogram.fsm.context import FSMContext
 
-from bot.api import AuthClient, urls_dict
+from bot.api import AuthClient, Urls
 
 
 async def refresh_token(refresh, state: FSMContext):
-    async with AuthClient(urls_dict.get("base_url")) as client:
-        data = await client.post(urls_dict.get("refresh"), payload=refresh)
+    async with AuthClient(Urls.BASE_URL) as client:
+        data = await client.post(Urls.REFRESH, payload=refresh)
         new_access = data.get("access")
         await state.update_data(access=new_access)
         return new_access

@@ -1,4 +1,4 @@
-from ..api import AuthClient, urls_dict
+from ..api import AuthClient, Urls
 
 
 async def register(user):
@@ -8,6 +8,6 @@ async def register(user):
         "first_name": user.first_name,
         "last_name": user.last_name,
     }
-    async with AuthClient(urls_dict.get("base_url")) as client:
-        data = await client.post(urls_dict.get("register"), payload)
+    async with AuthClient(Urls.BASE_URL) as client:
+        data = await client.post(Urls.REGISTER, payload)
         return data
