@@ -1,0 +1,63 @@
+services:
+  promtail:
+    image: grafana/promtail:latest
+    container_name: todo-bot-promtail
+    ports:
+      - "9081:9081"
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./grafana/promtail-config.yml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    privileged: true
+
+  loki:
+    image: grafana/loki:latest
+    container_name: todo-bot-loki
+    ports:
+      - "3101:3101"
+    volumes:
+      - ./grafana/loki-config.yml:/etc/loki/local-config.yaml
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: todo-bot-grafana
+    ports:
+      - "3001:3001"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - grafana_data:/var/lib/grafana
+
+  redis:
+    container_name: todo-bot-redis
+    image: redis:8-alpine
+    volumes:
+      - ./redis_data:/data
+
+  bot:
+    container_name: todo-bot-bot
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env.bot
+    command:
+      - "python"
+      - "-m"
+      - "bot.main"
+    depends_on:
+      - redis
+    ports:
+      - "8020:8020"
+
+volumes:
+  redis_data:
+  grafana_data:
+
+networks:
+  default:
+    external: true
+    name: todo-network
