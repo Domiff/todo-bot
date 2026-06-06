@@ -2,7 +2,7 @@ run:
     python -m bot.main
 
 up:
-    docker compose up
+    docker compose up --build
 
 down:
     docker compose down
