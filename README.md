@@ -22,10 +22,14 @@ Telegram bot for task management. Works together with the REST API ([todo-api](h
 
 ### Environment variables
 
-Create an `.env.bot` file in the project root:
+Copy `.env_template` to `.env` and fill in the values:
+
+```bash
+cp .env_template .env
+```
 
 ```env
-BOT_TOKEN=<your token from @BotFather>
+BOT_TOKEN=        # token from @BotFather
 REDIS_HOST=todo-bot-redis
 REDIS_PORT=6379
 REDIS_DB=0
@@ -34,18 +38,17 @@ BASE_URL=http://<todo-api address>/
 
 ### Run with Docker Compose
 
-```bash
-just up        # start all services
-just down      # stop all services
-just logs      # follow bot logs (-f / --follow)
-just build     # rebuild the bot image
-```
-
-The bot, Redis, and the monitoring stack run inside the `todo-network` Docker network.
-Make sure the network exists before starting:
+Make sure the shared network exists:
 
 ```bash
 docker network create todo-network
+```
+
+```bash
+just up        # build and start all services
+just down      # stop all services
+just logs      # follow bot logs
+just build     # rebuild the bot image only
 ```
 
 ### Run locally (development)
@@ -55,30 +58,40 @@ uv sync
 just run
 ```
 
+> The bot reads `.env` from the **parent** directory of the project root (configured in `pydantic-settings`).
+
 ## Project structure
 
 ```
 bot/
-├── api/            # HTTP client for todo-api
-├── crud/           # create / read / update / delete operations
-├── dialogs/
-│   ├── registration/   # registration dialog
-│   └── todo/
-│       ├── create/     # task creation
-│       ├── read/       # task list
-│       ├── update/     # task editing
-│       └── delete/     # task deletion
-├── config.py       # settings (pydantic-settings)
-└── main.py         # entry point
+├── auth/
+│   ├── service.py      # AuthService: register, refresh_token, check_token
+│   ├── handlers.py
+│   ├── dialog.py
+│   ├── router.py
+│   ├── states.py
+│   └── windows.py
+├── todo/
+│   ├── service.py      # TodoService: CRUD operations, prepare_message
+│   ├── handlers.py
+│   ├── dialog.py
+│   ├── router.py
+│   ├── states.py
+│   └── windows.py
+├── core/
+│   ├── config.py       # settings (pydantic-settings)
+│   ├── http.py         # HttpClient, AuthURL / TodoURL enums, http_client()
+│   └── setup.py        # create_bot(), create_dispatcher()
+└── main.py             # entry point
 ```
 
 ## Monitoring
 
-| Service  | URL                    |
-|----------|------------------------|
-| Grafana  | http://localhost:3001  |
-| Loki     | http://localhost:3101  |
-| Promtail | http://localhost:9081  |
+| Service  | URL                   |
+|----------|-----------------------|
+| Grafana  | http://localhost:3001 |
+| Loki     | http://localhost:3101 |
+| Promtail | http://localhost:9081 |
 
 Container logs are collected by Promtail → Loki → Grafana.
 

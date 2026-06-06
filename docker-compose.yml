@@ -43,7 +43,7 @@ services:
       context: .
       dockerfile: Dockerfile
     env_file:
-      - .env.bot
+      - .env
     command:
       - "python"
       - "-m"
