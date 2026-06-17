@@ -38,7 +38,7 @@ services:
       - ./redis_data:/data
 
   bot:
-    container_name: todo-bot-bot
+    container_name: todo-bot
     build:
       context: .
       dockerfile: Dockerfile
