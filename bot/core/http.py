@@ -11,10 +11,10 @@ class AuthURL(StrEnum):
 
 
 class TodoURL(StrEnum):
-    LIST = "api/list/"
-    CREATE = "api/create/"
-    UPDATE = "api/update/"
-    DELETE = "api/delete/"
+    LIST = "api/tasks/"
+    CREATE = "api/tasks/"
+    UPDATE = "api/tasks/"
+    DELETE = "api/tasks/"
 
 
 class HttpClient:
