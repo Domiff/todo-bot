@@ -8,6 +8,7 @@ dependencies = [
     "aiogram>=3.23.0",
     "aiogram-dialog>=2.4.0",
     "redis>=7.1.0",
+    "aio-pika>=10.2.1",
 ]
 
 [dependency-groups]
