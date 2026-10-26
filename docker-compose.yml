@@ -36,7 +36,14 @@ services:
     image: redis:8-alpine
     volumes:
       - ./redis_data:/data
-
+    healthcheck:
+          test: [ "CMD", "redis-cli", "ping" ]
+          start_period: 5s
+          interval: 1m
+          timeout: 3s
+          retries: 5
+    restart: unless-stopped
+    
   bot:
     container_name: todo-bot
     build:
@@ -49,13 +56,39 @@ services:
       - "-m"
       - "bot.main"
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     ports:
       - "8020:8020"
+    restart: unless-stopped
+
+  rabbitmq:
+    container_name: todo-bot-rabbitmq
+    image: rabbitmq:4-management
+    env_file:
+      - .env
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5671:5672"
+      - "15671:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      start_period: 20s
+      interval: 1m
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
 volumes:
   redis_data:
   grafana_data:
+  rabbitmq_data:
 
 networks:
   default:
