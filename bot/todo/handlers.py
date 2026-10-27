@@ -1,3 +1,4 @@
+import html
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -6,12 +7,17 @@ from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.input import ManagedTextInput
 from aiogram_dialog.widgets.kbd import Button
 
+from bot.core.messaging.events import Event, get_event_type
+from bot.todo.events import TASK_CREATED_EVENT_TYPE, TaskCreatedData
 from bot.todo.service import todo_service
 
 from .states import UpdateState
 
 if TYPE_CHECKING:
+    from aiogram import Bot
     from aiogram.fsm.context import FSMContext
+
+    from bot.todo.consumers import Handler
 
 
 class CreateHandlers:
@@ -166,3 +172,26 @@ class DeleteHandlers:
         await todo_service.delete_task(tokens.get("access"), tokens.get("refresh"), state, pk)
         await callback.message.answer("Task deleted")
         await dialog_manager.done()
+
+
+def make_task_events_handler(bot: "Bot") -> "Handler":
+    async def handle_task_created(body: bytes) -> None:
+        task = Event[TaskCreatedData].from_bytes(body).data
+        text = (
+            f"Task {html.escape(task.title)!r} was created\n"
+            f"Deadline: {task.deadline:%d.%m.%Y %H:%M}"
+        )
+        await bot.send_message(chat_id=task.tg_id, text=text)
+
+    handlers: dict[str, Handler] = {
+        TASK_CREATED_EVENT_TYPE: handle_task_created,
+    }
+
+    async def handle(body: bytes) -> None:
+        event_type = get_event_type(body)
+        handler = handlers.get(event_type)
+        if handler is None:
+            raise ValueError(f"Unexpected event type: {event_type}")
+        await handler(body)
+
+    return handle
