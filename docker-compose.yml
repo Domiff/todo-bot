@@ -1,49 +1,4 @@
-services:
-  promtail:
-    image: grafana/promtail:latest
-    container_name: todo-bot-promtail
-    ports:
-      - "9081:9081"
-    volumes:
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./grafana/promtail-config.yml:/etc/promtail/config.yml
-    command: -config.file=/etc/promtail/config.yml
-    privileged: true
-
-  loki:
-    image: grafana/loki:latest
-    container_name: todo-bot-loki
-    ports:
-      - "3101:3101"
-    volumes:
-      - ./grafana/loki-config.yml:/etc/loki/local-config.yaml
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: todo-bot-grafana
-    ports:
-      - "3001:3001"
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    volumes:
-      - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yaml
-      - grafana_data:/var/lib/grafana
-
-  redis:
-    container_name: todo-bot-redis
-    image: redis:8-alpine
-    volumes:
-      - ./redis_data:/data
-    healthcheck:
-          test: [ "CMD", "redis-cli", "ping" ]
-          start_period: 5s
-          interval: 1m
-          timeout: 3s
-          retries: 5
-    restart: unless-stopped
-    
+services:   
   bot:
     container_name: todo-bot
     build:
@@ -55,40 +10,7 @@ services:
       - "python"
       - "-m"
       - "bot.main"
-    depends_on:
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    ports:
-      - "8020:8020"
     restart: unless-stopped
-
-  rabbitmq:
-    container_name: todo-bot-rabbitmq
-    image: rabbitmq:4-management
-    env_file:
-      - .env
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
-    ports:
-      - "5671:5672"
-      - "15671:15672"
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    healthcheck:
-      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
-      start_period: 20s
-      interval: 1m
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
-volumes:
-  redis_data:
-  grafana_data:
-  rabbitmq_data:
 
 networks:
   default:

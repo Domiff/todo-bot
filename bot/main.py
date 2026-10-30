@@ -4,7 +4,7 @@ import logging
 from aiogram_dialog import setup_dialogs
 
 from bot.auth import register_router
-from bot.core.messaging.topology import TASK_CREATED_QUEUE
+from bot.core.messaging.topology import TASK_QUEUE
 from bot.core.setup import create_bot, create_dispatcher
 from bot.todo import todo_router
 from bot.todo.consumers import consume
@@ -20,7 +20,7 @@ async def main():
 
     setup_dialogs(dp)
     task_events_handler = make_task_events_handler(bot)
-    consumer = asyncio.create_task(consume(task_events_handler, TASK_CREATED_QUEUE))
+    consumer = asyncio.create_task(consume(task_events_handler, TASK_QUEUE))
     try:
         await dp.start_polling(bot)
     finally:
