@@ -20,7 +20,6 @@ class Settings(BaseSettings):
             f"@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT}//"
         )
 
-
     model_config = SettingsConfigDict(env_file="../.env", env_file_encoding="utf-8")
 
 

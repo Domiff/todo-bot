@@ -65,25 +65,39 @@ class UpdateWindows:
         Const("Choose field:"),
         Button(Const("title"), id="task_title", on_click=UpdateHandlers.choose_field),
         Button(Const("body"), id="task_body", on_click=UpdateHandlers.choose_field),
-        Button(Const("deadline"), id="task_deadline", on_click=UpdateHandlers.choose_field),
+        Button(
+            Const("deadline"), id="task_deadline", on_click=UpdateHandlers.choose_field
+        ),
         state=UpdateState.choose_field,
     )
     title = Window(
         Const("Enter a new title or confirm to update the data:"),
         TextInput(id="task_title", on_success=UpdateHandlers.edit_title),
-        Button(Const("Confirm updates"), id="confirm_title", on_click=UpdateHandlers.confirm),
+        Button(
+            Const("Confirm updates"),
+            id="confirm_title",
+            on_click=UpdateHandlers.confirm,
+        ),
         state=UpdateState.title,
     )
     body = Window(
         Const("Enter a new body or confirm to update the data:"),
         TextInput(id="task_body", on_success=UpdateHandlers.edit_body),
-        Button(Const("Confirm updates"), id="confirm_body", on_click=UpdateHandlers.confirm),
+        Button(
+            Const("Confirm updates"), id="confirm_body", on_click=UpdateHandlers.confirm
+        ),
         state=UpdateState.body,
     )
     deadline = Window(
-        Const("Enter a new deadline in format DD.MM.YYYY HH:MM or confirm to update the data:"),
+        Const(
+            "Enter a new deadline in format DD.MM.YYYY HH:MM or confirm to update the data:"
+        ),
         TextInput(id="task_deadline", on_success=UpdateHandlers.edit_deadline),
-        Button(Const("Confirm updates"), id="confirm_deadline", on_click=UpdateHandlers.confirm),
+        Button(
+            Const("Confirm updates"),
+            id="confirm_deadline",
+            on_click=UpdateHandlers.confirm,
+        ),
         state=UpdateState.deadline,
     )
     category = Window(
@@ -91,7 +105,11 @@ class UpdateWindows:
         Button(Const("Low"), id="low", on_click=UpdateHandlers.edit_category),
         Button(Const("Middle"), id="middle", on_click=UpdateHandlers.edit_category),
         Button(Const("High"), id="high", on_click=UpdateHandlers.edit_category),
-        Button(Const("Confirm updates"), id="confirm_category", on_click=UpdateHandlers.confirm),
+        Button(
+            Const("Confirm updates"),
+            id="confirm_category",
+            on_click=UpdateHandlers.confirm,
+        ),
         state=UpdateState.category,
     )
     confirm = Window(

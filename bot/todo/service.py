@@ -12,7 +12,9 @@ class TodoService:
     def __init__(self):
         self.client: HttpClient = http_client()
 
-    async def create_task(self, access: str, refresh: str, state: FSMContext, task: dict):
+    async def create_task(
+        self, access: str, refresh: str, state: FSMContext, task: dict
+    ):
         headers = {"Authorization": f"Bearer {access}"}
         async with self.client as client:
             data = await client.post(TodoURL.CREATE, data=task, headers=headers)
@@ -30,13 +32,17 @@ class TodoService:
             data = await client.get(TodoURL.LIST, headers=headers)
             return data[0]
 
-    async def update_task(self, access: str, refresh: str, state: FSMContext, task: dict, pk: int):
+    async def update_task(
+        self, access: str, refresh: str, state: FSMContext, task: dict, pk: int
+    ):
         headers = {"Authorization": f"Bearer {access}"}
         async with self.client as client:
             data = await client.patch(TodoURL.UPDATE, pk=pk, data=task, headers=headers)
             if data[1] == 401:
                 headers = await auth_service.check_token(refresh, state)
-                data = await client.patch(TodoURL.UPDATE, pk=pk, data=task, headers=headers)
+                data = await client.patch(
+                    TodoURL.UPDATE, pk=pk, data=task, headers=headers
+                )
             return data
 
     async def delete_task(self, access: str, refresh: str, state: FSMContext, pk: int):
@@ -48,14 +54,20 @@ class TodoService:
                 data = await client.delete(TodoURL.DELETE, pk=pk, headers=headers)
             return data
 
-    async def prepare_message(self, access: str, refresh: str, state: FSMContext) -> list[str]:
+    async def prepare_message(
+        self, access: str, refresh: str, state: FSMContext
+    ) -> list[str]:
         data = await self.get_tasks(access, refresh, state)
         if not data:
             return ["You not have any tasks"]
         messages = []
         for item in data:
-            deadline = datetime.fromisoformat(item["deadline"]).strftime("%d.%m.%Y %H:%M")
-            created_at = datetime.fromisoformat(item["created_at"]).strftime("%d.%m.%Y %H:%M")
+            deadline = datetime.fromisoformat(item["deadline"]).strftime(
+                "%d.%m.%Y %H:%M"
+            )
+            created_at = datetime.fromisoformat(item["created_at"]).strftime(
+                "%d.%m.%Y %H:%M"
+            )
             messages.append(
                 Template(
                     f"{markdown.hbold('Title')}: $title\n"

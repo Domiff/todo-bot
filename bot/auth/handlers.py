@@ -13,7 +13,9 @@ if TYPE_CHECKING:
 class RegistrationHandlers:
     @staticmethod
     async def confirm(
-        callback: CallbackQuery, button, dialog_manager: DialogManager,
+        callback: CallbackQuery,
+        button,
+        dialog_manager: DialogManager,
     ) -> None:
         user = callback.from_user
         data = await auth_service.register(user)

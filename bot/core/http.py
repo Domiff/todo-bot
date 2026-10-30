@@ -23,7 +23,9 @@ class HttpClient:
 
     async def __aenter__(self):
         connector = aiohttp.TCPConnector(ssl=False)
-        self.session = aiohttp.ClientSession(base_url=self.base_url, connector=connector)
+        self.session = aiohttp.ClientSession(
+            base_url=self.base_url, connector=connector
+        )
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
@@ -35,8 +37,12 @@ class HttpClient:
         async with self.session.get(url, headers=headers) as response:
             return await response.json(), response.status
 
-    async def post(self, url: str, data: dict = None, json: dict = None, headers: dict = None):
-        async with self.session.post(url, data=data, json=json, headers=headers) as response:
+    async def post(
+        self, url: str, data: dict = None, json: dict = None, headers: dict = None
+    ):
+        async with self.session.post(
+            url, data=data, json=json, headers=headers
+        ) as response:
             return await response.json(), response.status
 
     async def patch(self, url: str, pk: int, data: dict, headers: dict = None):
