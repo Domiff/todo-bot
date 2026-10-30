@@ -9,7 +9,9 @@ Telegram bot for task management. Works together with the REST API ([todo-api](h
 - [aiogram-dialog](https://aiogram-dialog.readthedocs.io/) — dialog-based UI (FSM)
 - **Redis** — FSM state storage
 - **RabbitMQ** + [aio-pika](https://aio-pika.readthedocs.io/) — events from todo-api ([CloudEvents](https://cloudevents.io/) JSON, parsed with pydantic)
-- **Grafana / Loki / Promtail** — log collection and visualization
+
+Redis, RabbitMQ and logging (Grafana / Loki / Promtail) are not part of this repository: they run in
+the separate **todo-infrastructure** stack.
 
 ## Features
 
@@ -18,7 +20,7 @@ Telegram bot for task management. Works together with the REST API ([todo-api](h
 - Create a task (title, body, deadline, category)
 - Edit a task (any field)
 - Delete a task
-- Notification in Telegram when a task is created (event from todo-api via RabbitMQ)
+- Notifications in Telegram when a task is created, updated or deleted (events from todo-api via RabbitMQ)
 
 ## Getting Started
 
@@ -32,13 +34,13 @@ cp .env_template .env
 
 ```env
 BOT_TOKEN=        # token from @BotFather
-REDIS_HOST=todo-bot-redis
+REDIS_HOST=todo-redis
 REDIS_PORT=6379
 REDIS_DB=0
-BASE_URL=http://<todo-api address>/
-RABBITMQ_USER=    # also used as the broker's default user in docker-compose.yml
+BASE_URL=http://backend:8000
+RABBITMQ_USER=    # same credentials as in todo-infrastructure's .env
 RABBITMQ_PASSWORD=
-RABBITMQ_HOST=todo-bot-rabbitmq
+RABBITMQ_HOST=todo-rabbitmq
 RABBITMQ_PORT=5672
 ```
 
@@ -47,15 +49,14 @@ RABBITMQ_PORT=5672
 
 ### Run with Docker Compose
 
-Make sure the shared network exists:
+The bot connects to Redis and RabbitMQ from todo-infrastructure and to todo-api over the external
+network `todo-network`. Start order: **todo-infrastructure → todo-api → todo-bot**. This compose
+file only contains the bot and has no `depends_on` on the infrastructure, so it must already be
+running.
 
 ```bash
-docker network create todo-network
-```
-
-```bash
-just up        # build and start all services
-just down      # stop all services
+just up        # build and start the bot
+just down      # stop the bot
 just logs      # follow bot logs
 just build     # rebuild the bot image only
 ```
@@ -93,53 +94,54 @@ bot/
 │   ├── config.py       # settings (pydantic-settings)
 │   ├── http.py         # HttpClient, AuthURL / TodoURL enums, http_client()
 │   ├── messaging/
-│   │   ├── connection.py   # one robust connection + channel; declares topology on connect
+│   │   ├── connection.py   # one robust connection + channel per process
 │   │   ├── events.py       # Event[DataT]: CloudEvents envelope, get_event_type()
-│   │   └── topology.py     # exchanges, queues and bindings of the bot
+│   │   └── topology.py     # name of the queue the bot consumes
 │   └── setup.py        # create_bot(), create_dispatcher()
 └── main.py             # entry point: polling + RabbitMQ consumer task
 ```
 
 ## Events (RabbitMQ)
 
-The RabbitMQ broker runs in this stack (`todo-bot-rabbitmq`) and is shared with todo-api over
-`todo-network`. Start the bot stack before todo-api, otherwise todo-api cannot publish events.
-
-Topology declared by the bot on connect:
+The broker (`todo-rabbitmq`) and its topology belong to todo-infrastructure
+(`definitions.json`). The bot declares nothing; it only consumes the existing queue:
 
 ```
-todo.tasks (direct) ──tasks.created──> todo-bot.tasks.created ──> bot
+todo-api ──> todo.tasks (topic) ──tasks.#──> todo-bot.tasks ──> bot
 ```
-
-- `todo.tasks` exchange belongs to todo-api; the bot redeclares it with the same parameters
-  (`direct`, durable) so the binding works whichever service starts first.
-- `todo-bot.tasks.created` is the bot's durable queue.
 
 Supported events:
 
-| Event type             | Action                                                  |
-|------------------------|---------------------------------------------------------|
-| `todo.task.created.v1` | sends "Task ... was created" with the deadline to `tg_id` |
+| Event type             | Action                                                                              |
+|------------------------|-------------------------------------------------------------------------------------|
+| `todo.task.created.v1` | sends "Task ... was created" with the deadline to `tg_id`                           |
+| `todo.task.updated.v1` | sends "Task ... was updated" with description, category, deadline and status (done / in progress) to `tg_id` |
+| `todo.task.deleted.v1` | sends "Task ... was deleted" to `tg_id`                                             |
 
-Messages are dispatched by the CloudEvents `type` field. A message with an unknown type or an
-invalid payload is rejected without requeue (there is no dead letter queue yet, so it is dropped).
+Messages are dispatched by the CloudEvents `type` field (`TaskEventTypes` in `bot/todo/events.py`).
+User-provided text is HTML-escaped because the bot uses `parse_mode=HTML`.
+
+**Known limitation:** an error while handling a message (unknown type, a payload that does not
+match the model) currently stops the consumer task. The bot keeps answering in Telegram, but no
+further events are read, and the failing message stays at the head of the queue, so a restart
+hits it again. Check the queue's consumer count in the RabbitMQ management UI if notifications stop.
+
+The payload models are a copy of todo-api's contract, and all their fields are required: a message
+that lacks a field (for example, one published before the field was added) fails to parse and
+triggers the limitation above.
 
 To support a new event:
 
-1. Add its type and payload model to `bot/todo/events.py` (must match todo-api).
+1. Add its type to `TaskEventTypes` and its payload model to `bot/todo/events.py`
+   (must match todo-api).
 2. Add a handler and register it in the `handlers` dict in `make_task_events_handler`.
-3. Bind the queue to the event's routing key in `bot/core/messaging/topology.py`.
+3. If its routing key is not covered by the `tasks.#` binding, add a binding to
+   `definitions.json` in todo-infrastructure.
 
 ## Monitoring
 
-| Service  | URL                   |
-|----------|-----------------------|
-| Grafana  | http://localhost:3001 |
-| Loki     | http://localhost:3101 |
-| Promtail | http://localhost:9081 |
-| RabbitMQ management | http://localhost:15671 |
-
-Container logs are collected by Promtail → Loki → Grafana.
+Grafana, Loki, Promtail and the RabbitMQ management UI run in todo-infrastructure; see its README
+for URLs and ports.
 
 ## Linting
 
