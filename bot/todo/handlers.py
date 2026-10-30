@@ -8,7 +8,7 @@ from aiogram_dialog.widgets.input import ManagedTextInput
 from aiogram_dialog.widgets.kbd import Button
 
 from bot.core.messaging.events import Event, get_event_type
-from bot.todo.events import TASK_CREATED_EVENT_TYPE, TaskCreatedData
+from bot.todo.events import TaskEventTypes, TaskCreatedData, TaskUpdatedData, TaskDeletedData
 from bot.todo.service import todo_service
 
 from .states import UpdateState
@@ -182,9 +182,30 @@ def make_task_events_handler(bot: "Bot") -> "Handler":
             f"Deadline: {task.deadline:%d.%m.%Y %H:%M}"
         )
         await bot.send_message(chat_id=task.tg_id, text=text)
+        
+    async def handle_task_updated(body: bytes) -> None:
+        task = Event[TaskUpdatedData].from_bytes(body).data
+        status = "done" if task.completed else "in progress"
+        text = (
+            f"Task {html.escape(task.title)!r} was updated\n"
+            f"Description: {html.escape(task.body)}\n"
+            f"Category: {html.escape(task.category)}\n"
+            f"Deadline: {task.deadline:%d.%m.%Y %H:%M}\n"
+            f"Status: {status}"
+        )
+        await bot.send_message(chat_id=task.tg_id, text=text)
+        
+    async def handle_task_deleted(body: bytes) -> None:
+        task = Event[TaskDeletedData].from_bytes(body).data
+        text = (
+            f"Task {html.escape(task.title)!r} was deleted\n"
+        )
+        await bot.send_message(chat_id=task.tg_id, text=text)
 
     handlers: dict[str, Handler] = {
-        TASK_CREATED_EVENT_TYPE: handle_task_created,
+        TaskEventTypes.CREATED_EVENT: handle_task_created,
+        TaskEventTypes.UPDATED_EVENT: handle_task_updated,
+        TaskEventTypes.DELETED_EVENT: handle_task_deleted,
     }
 
     async def handle(body: bytes) -> None:
