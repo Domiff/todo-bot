@@ -86,7 +86,7 @@ bot/
 ├── todo/
 │   ├── service.py      # TodoService: CRUD operations, prepare_message
 │   ├── handlers.py     # dialog handlers + make_task_events_handler (event dispatch)
-│   ├── consumers.py    # consume(handler, queue): reads a queue, acks/rejects messages
+│   ├── consumers.py    # consume(handler, queue): reads a queue, acks/rejects and logs failures
 │   ├── events.py       # task event types and payloads (contract with todo-api)
 │   ├── dialog.py
 │   ├── router.py
@@ -95,6 +95,7 @@ bot/
 ├── core/
 │   ├── config.py       # settings (pydantic-settings)
 │   ├── http.py         # HttpClient, AuthURL / TodoURL enums, http_client()
+│   ├── logging.py      # JSON logging: setup_logging(), get_logger()
 │   ├── messaging/
 │   │   ├── connection.py   # one robust connection + channel per process
 │   │   ├── events.py       # Event[DataT]: CloudEvents envelope, get_event_type()
@@ -123,14 +124,14 @@ Supported events:
 Messages are dispatched by the CloudEvents `type` field (`TaskEventTypes` in `bot/todo/events.py`).
 User-provided text is HTML-escaped because the bot uses `parse_mode=HTML`.
 
-**Known limitation:** an error while handling a message (unknown type, a payload that does not
-match the model) currently stops the consumer task. The bot keeps answering in Telegram, but no
-further events are read, and the failing message stays at the head of the queue, so a restart
-hits it again. Check the queue's consumer count in the RabbitMQ management UI if notifications stop.
+If handling a message fails (unknown type, a payload that does not match the model, a Telegram
+error), the message is rejected without requeue and logged as `Failed to handle message` with its
+`message_id`, `routing_key` and the traceback. The consumer then continues with the next message.
+There is no dead letter queue yet, so a rejected message is dropped.
 
 The payload models are a copy of todo-api's contract, and all their fields are required: a message
-that lacks a field (for example, one published before the field was added) fails to parse and
-triggers the limitation above.
+that lacks a field (for example, one published before the field was added) fails to parse and is
+rejected as described above.
 
 To support a new event:
 
@@ -140,10 +141,23 @@ To support a new event:
 3. If its routing key is not covered by the `tasks.#` binding, add a binding to
    `definitions.json` in todo-infrastructure.
 
+## Logging
+
+Logs are written to stdout as JSON, one record per line (`bot/core/logging.py`, configured by
+`setup_logging()` in `main.py`):
+
+```json
+{"time": "2026-10-30 21:32:47", "level": "ERROR", "logger": "bot.todo.consumers", "module": "consumers", "line": 21, "message": "Failed to handle message", "message_id": "...", "routing_key": "tasks.created", "exception": "Traceback ..."}
+```
+
+- Fields passed via `extra=` are added to the record; tracebacks go to `exception`.
+- Levels: `bot.*` and `aiogram`, `aio_pika` at `INFO`; `aiormq` and all other libraries at `WARNING`.
+- In code, use `get_logger(__name__)` from `bot.core.logging`.
+
 ## Monitoring
 
 Grafana, Loki, Promtail and the RabbitMQ management UI run in todo-infrastructure; see its README
-for URLs and ports.
+for URLs and ports. Promtail collects the bot's stdout from Docker.
 
 ## Linting
 
