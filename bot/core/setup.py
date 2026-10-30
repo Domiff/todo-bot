@@ -20,6 +20,8 @@ def create_dispatcher() -> Dispatcher:
         host=settings.REDIS_HOST,
         port=settings.REDIS_PORT,
         db=settings.REDIS_DB,
+        username=settings.REDIS_USER,
+        password=settings.REDIS_PASSWORD
     )
     key_builder = DefaultKeyBuilder(with_destiny=True)
     storage = RedisStorage(redis, key_builder=key_builder)
