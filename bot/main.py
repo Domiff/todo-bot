@@ -1,9 +1,9 @@
 import asyncio
-import logging
 
 from aiogram_dialog import setup_dialogs
 
 from bot.auth import register_router
+from bot.core.logging import setup_logging
 from bot.core.messaging.topology import TASK_QUEUE
 from bot.core.setup import create_bot, create_dispatcher
 from bot.todo import todo_router
@@ -29,5 +29,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    setup_logging()
     asyncio.run(main())
