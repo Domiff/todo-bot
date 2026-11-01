@@ -17,7 +17,7 @@ the separate **todo-infrastructure** stack.
 
 - User registration via Telegram
 - View task list
-- Create a task (title, body, deadline, category)
+- Create a task (title, body, deadline, priority, optional category)
 - Edit a task (any field)
 - Delete a task
 - Notifications in Telegram when a task is created, updated or deleted (events from todo-api via RabbitMQ)
@@ -118,7 +118,7 @@ Supported events:
 | Event type             | Action                                                                              |
 |------------------------|-------------------------------------------------------------------------------------|
 | `todo.task.created.v1` | sends "Task ... was created" with the deadline to `tg_id`                           |
-| `todo.task.updated.v1` | sends "Task ... was updated" with description, category, deadline and status (done / in progress) to `tg_id` |
+| `todo.task.updated.v1` | sends "Task ... was updated" with description, priority, category, deadline and status (done / in progress) to `tg_id` |
 | `todo.task.deleted.v1` | sends "Task ... was deleted" to `tg_id`                                             |
 
 Messages are dispatched by the CloudEvents `type` field (`TaskEventTypes` in `bot/todo/events.py`).

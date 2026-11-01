@@ -7,6 +7,9 @@ from aiogram.utils import markdown
 from bot.auth.service import auth_service
 from bot.core.http import HttpClient, TodoURL, http_client
 
+PRIORITIES = {"low": 1, "middle": 2, "high": 3}
+PRIORITY_LABELS = {value: key.capitalize() for key, value in PRIORITIES.items()}
+
 
 class TodoService:
     def __init__(self):
@@ -30,6 +33,17 @@ class TodoService:
             if data[1] == 401 or not data:
                 headers = await auth_service.check_token(refresh, state)
             data = await client.get(TodoURL.LIST, headers=headers)
+            return data[0]
+
+    async def get_categories(
+        self, access: str, refresh: str, state: FSMContext
+    ) -> list:
+        headers = {"Authorization": f"Bearer {access}"}
+        async with self.client as client:
+            data = await client.get(TodoURL.CATEGORIES, headers=headers)
+            if data[1] == 401:
+                headers = await auth_service.check_token(refresh, state)
+                data = await client.get(TodoURL.CATEGORIES, headers=headers)
             return data[0]
 
     async def update_task(
@@ -74,13 +88,15 @@ class TodoService:
                     f"{markdown.hbold('Body')}: $body \n"
                     f"{markdown.hbold('Deadline')}: $deadline\n"
                     f"{markdown.hbold('Created_at')}: $created_at\n"
+                    f"{markdown.hbold('Priority')}: $priority\n"
                     f"{markdown.hbold('Category')}: $category\n",
                 ).substitute(
                     title=item["title"],
                     deadline=deadline,
                     body=item["body"],
                     created_at=created_at,
-                    category=item["category"],
+                    priority=PRIORITY_LABELS[item["priority"]],
+                    category=item["category"] or "-",
                 ),
             )
         return messages

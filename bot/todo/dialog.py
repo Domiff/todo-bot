@@ -5,8 +5,9 @@ from .windows import CreateWindows, DeleteWindows, ReadWindows, UpdateWindows
 create_dialog = Dialog(
     CreateWindows.title,
     CreateWindows.body,
-    CreateWindows.category,
     CreateWindows.deadline,
+    CreateWindows.priority,
+    CreateWindows.category,
     CreateWindows.confirm,
 )
 
@@ -18,6 +19,8 @@ update_dialog = Dialog(
     UpdateWindows.title,
     UpdateWindows.body,
     UpdateWindows.deadline,
+    UpdateWindows.priority,
+    UpdateWindows.category,
     UpdateWindows.confirm,
 )
 

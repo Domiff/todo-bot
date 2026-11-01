@@ -23,12 +23,31 @@ class CreateWindows:
         TextInput(id="deadline", on_success=CreateHandlers.deadline),
         state=CreateStates.deadline,
     )
+    priority = Window(
+        Const("Choose priority: "),
+        Button(Const("Low"), id="low", on_click=CreateHandlers.priority),
+        Button(Const("Middle"), id="middle", on_click=CreateHandlers.priority),
+        Button(Const("High"), id="high", on_click=CreateHandlers.priority),
+        state=CreateStates.priority,
+    )
     category = Window(
-        Const("Enter category: "),
-        Button(Const("Low"), id="low", on_click=CreateHandlers.category),
-        Button(Const("Middle"), id="middle", on_click=CreateHandlers.category),
-        Button(Const("High"), id="high", on_click=CreateHandlers.category),
+        Const("Choose category: "),
+        Column(
+            Select(
+                text=Format("{item[name]}"),
+                id="category_select",
+                items="categories",
+                item_id_getter=lambda item: item["slug"],
+                on_click=CreateHandlers.category,
+            ),
+        ),
+        Button(
+            Const("No category"),
+            id="no_category",
+            on_click=CreateHandlers.skip_category,
+        ),
         state=CreateStates.category,
+        getter=ReadHandlers.categories_getter,
     )
     confirm = Window(
         Const("Confirm create task"),
@@ -68,6 +87,12 @@ class UpdateWindows:
         Button(
             Const("deadline"), id="task_deadline", on_click=UpdateHandlers.choose_field
         ),
+        Button(
+            Const("priority"), id="task_priority", on_click=UpdateHandlers.choose_field
+        ),
+        Button(
+            Const("category"), id="task_category", on_click=UpdateHandlers.choose_field
+        ),
         state=UpdateState.choose_field,
     )
     title = Window(
@@ -100,17 +125,36 @@ class UpdateWindows:
         ),
         state=UpdateState.deadline,
     )
+    priority = Window(
+        Const("Choose a new priority or confirm to update the data:"),
+        Button(Const("Low"), id="low", on_click=UpdateHandlers.edit_priority),
+        Button(Const("Middle"), id="middle", on_click=UpdateHandlers.edit_priority),
+        Button(Const("High"), id="high", on_click=UpdateHandlers.edit_priority),
+        Button(
+            Const("Confirm updates"),
+            id="confirm_priority",
+            on_click=UpdateHandlers.confirm,
+        ),
+        state=UpdateState.priority,
+    )
     category = Window(
-        Const("Choose category:"),
-        Button(Const("Low"), id="low", on_click=UpdateHandlers.edit_category),
-        Button(Const("Middle"), id="middle", on_click=UpdateHandlers.edit_category),
-        Button(Const("High"), id="high", on_click=UpdateHandlers.edit_category),
+        Const("Choose a new category or confirm to update the data:"),
+        Column(
+            Select(
+                text=Format("{item[name]}"),
+                id="category_select",
+                items="categories",
+                item_id_getter=lambda item: item["slug"],
+                on_click=UpdateHandlers.edit_category,
+            ),
+        ),
         Button(
             Const("Confirm updates"),
             id="confirm_category",
             on_click=UpdateHandlers.confirm,
         ),
         state=UpdateState.category,
+        getter=ReadHandlers.categories_getter,
     )
     confirm = Window(
         Const("Confirm updating task:"),

@@ -15,6 +15,7 @@ class TodoURL(StrEnum):
     CREATE = "api/tasks/"
     UPDATE = "api/tasks/"
     DELETE = "api/tasks/"
+    CATEGORIES = "api/categories/"
 
 
 class HttpClient:

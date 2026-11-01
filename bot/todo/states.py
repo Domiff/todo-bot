@@ -5,6 +5,7 @@ class CreateStates(StatesGroup):
     title = State()
     body = State()
     deadline = State()
+    priority = State()
     category = State()
     confirm = State()
 
@@ -19,6 +20,7 @@ class UpdateState(StatesGroup):
     title = State()
     body = State()
     deadline = State()
+    priority = State()
     category = State()
     confirm = State()
 

@@ -14,7 +14,7 @@ from bot.todo.events import (
     TaskEventTypes,
     TaskUpdatedData,
 )
-from bot.todo.service import todo_service
+from bot.todo.service import PRIORITIES, PRIORITY_LABELS, todo_service
 
 from .states import UpdateState
 
@@ -57,10 +57,26 @@ class CreateHandlers:
         await dialog_manager.next()
 
     @staticmethod
-    async def category(
+    async def priority(
         callback: CallbackQuery, button: Button, dialog_manager: DialogManager
     ):
-        dialog_manager.dialog_data["category"] = button.widget_id.capitalize()
+        dialog_manager.dialog_data["priority"] = PRIORITIES[button.widget_id]
+        await dialog_manager.next()
+
+    @staticmethod
+    async def category(
+        callback: CallbackQuery,
+        widget,
+        dialog_manager: DialogManager,
+        item_id: str,
+    ):
+        dialog_manager.dialog_data["category"] = item_id
+        await dialog_manager.next()
+
+    @staticmethod
+    async def skip_category(
+        callback: CallbackQuery, button: Button, dialog_manager: DialogManager
+    ):
         await dialog_manager.next()
 
     @staticmethod
@@ -70,12 +86,14 @@ class CreateHandlers:
         task = {
             "title": dialog_manager.dialog_data["title"],
             "body": dialog_manager.dialog_data["body"],
-            "category": dialog_manager.dialog_data["category"],
+            "priority": str(dialog_manager.dialog_data["priority"]),
             "deadline": datetime.strptime(
                 dialog_manager.dialog_data["deadline"],
                 "%d.%m.%Y %H:%M",
             ).isoformat(),
         }
+        if category := dialog_manager.dialog_data.get("category"):
+            task["category"] = category
         await todo_service.create_task(
             tokens.get("access"), tokens.get("refresh"), state, task
         )
@@ -104,6 +122,15 @@ class ReadHandlers:
         tasks = await todo_service.get_tasks(tokens["access"], tokens["refresh"], state)
         return {"tasks": tasks}
 
+    @staticmethod
+    async def categories_getter(dialog_manager: DialogManager, **kwargs):
+        state = dialog_manager.middleware_data["state"]
+        tokens = await state.get_data()
+        categories = await todo_service.get_categories(
+            tokens["access"], tokens["refresh"], state
+        )
+        return {"categories": categories}
+
 
 class UpdateHandlers:
     @staticmethod
@@ -127,6 +154,10 @@ class UpdateHandlers:
                 await dialog_manager.switch_to(state=UpdateState.body)
             case "task_deadline":
                 await dialog_manager.switch_to(state=UpdateState.deadline)
+            case "task_priority":
+                await dialog_manager.switch_to(state=UpdateState.priority)
+            case "task_category":
+                await dialog_manager.switch_to(state=UpdateState.category)
 
     @staticmethod
     async def edit_title(
@@ -159,10 +190,20 @@ class UpdateHandlers:
         await dialog_manager.next()
 
     @staticmethod
-    async def edit_category(
+    async def edit_priority(
         callback: CallbackQuery, button: Button, dialog_manager: DialogManager
     ):
-        dialog_manager.dialog_data["category"] = button.widget_id.capitalize()
+        dialog_manager.dialog_data["priority"] = PRIORITIES[button.widget_id]
+        await dialog_manager.next()
+
+    @staticmethod
+    async def edit_category(
+        callback: CallbackQuery,
+        widget,
+        dialog_manager: DialogManager,
+        item_id: str,
+    ):
+        dialog_manager.dialog_data["category"] = item_id
         await dialog_manager.next()
 
     @staticmethod
@@ -183,6 +224,12 @@ class UpdateHandlers:
                     if dialog_manager.dialog_data.get("deadline")
                     else None
                 ),
+                "priority": (
+                    str(dialog_manager.dialog_data["priority"])
+                    if dialog_manager.dialog_data.get("priority")
+                    else None
+                ),
+                "category": dialog_manager.dialog_data.get("category"),
             }.items()
             if val
         }
@@ -236,7 +283,8 @@ def make_task_events_handler(bot: "Bot") -> "Handler":
         text = (
             f"Task {html.escape(task.title)!r} was updated\n"
             f"Description: {html.escape(task.body)}\n"
-            f"Category: {html.escape(task.category)}\n"
+            f"Priority: {PRIORITY_LABELS[task.priority]}\n"
+            f"Category: {html.escape(task.category) or '-'}\n"
             f"Deadline: {task.deadline:%d.%m.%Y %H:%M}\n"
             f"Status: {status}"
         )
