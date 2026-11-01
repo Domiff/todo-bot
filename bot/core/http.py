@@ -25,7 +25,9 @@ class HttpClient:
     async def __aenter__(self):
         connector = aiohttp.TCPConnector(ssl=False)
         self.session = aiohttp.ClientSession(
-            base_url=self.base_url, connector=connector
+            base_url=self.base_url,
+            connector=connector,
+            headers={"X-Client": "Telegram"},
         )
         return self
 
