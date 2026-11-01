@@ -4,16 +4,18 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
 
-from .dialog import register_dialog
-from .states import RegistrationState
+from .dialog import auth_dialog
+from .handlers import COMMANDS
+from .states import AuthState
 
 router = Router()
-router.include_router(register_dialog)
+router.include_router(auth_dialog)
 
 
 @router.message(CommandStart())
 async def start(message: Message, dialog_manager: DialogManager, state: FSMContext):
-    await dialog_manager.start(
-        state=RegistrationState.confirm,
-        mode=StartMode.RESET_STACK,
-    )
+    tokens = await state.get_data()
+    if tokens.get("refresh"):
+        await message.answer(f"You are already logged in\n{COMMANDS}")
+        return
+    await dialog_manager.start(state=AuthState.choose, mode=StartMode.RESET_STACK)

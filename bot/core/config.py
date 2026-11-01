@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     REDIS_PASSWORD: str
 
     BASE_URL: str
+    BOT_API_KEY: str
 
     RABBITMQ_USER: str
     RABBITMQ_PASSWORD: str

@@ -15,7 +15,7 @@ the separate **todo-infrastructure** stack.
 
 ## Features
 
-- User registration via Telegram
+- Registration and login with a username and password; the messages and prompts are deleted from the chat
 - View task list
 - Create a task (title, body, deadline, priority, optional category)
 - Edit a task (any field)
@@ -40,6 +40,7 @@ REDIS_DB=0
 REDIS_USER=todo-bot   # ACL user from todo-infrastructure's redis/redis.acl
 REDIS_PASSWORD=       # its password (the value after ">" in redis.acl)
 BASE_URL=http://backend:8000
+BOT_API_KEY=      # same value as in todo-api's .env
 RABBITMQ_USER=    # same credentials as in todo-infrastructure's .env
 RABBITMQ_PASSWORD=
 RABBITMQ_HOST=todo-rabbitmq
@@ -72,12 +73,23 @@ just run
 
 > The bot reads `.env` from the **parent** directory of the project root (configured in `pydantic-settings`).
 
+## Authentication
+
+`/start` offers registration or login. The username and password messages are deleted right away, and the prompts share one message
+that is deleted after a successful login. The bot sends the password to todo-api and does not store it; only JWT tokens stay in Redis.
+
+Requests that carry a `tg_id` use the `X-Bot-Key` header. Login also links the Telegram account to the user. When tokens can no longer
+be refreshed, `check_token` raises `TokenExpired`, and the bot asks to send `/start`.
+
+All requests to todo-api carry `X-Client: Telegram`, so actions made in the bot do not produce notifications.
+
 ## Project structure
 
 ```
 bot/
 ├── auth/
-│   ├── service.py      # AuthService: register, refresh_token, check_token
+│   ├── service.py      # AuthService: register, login, refresh_token, check_token
+│   ├── exceptions.py   # AuthError, TokenExpired
 │   ├── handlers.py
 │   ├── dialog.py
 │   ├── router.py

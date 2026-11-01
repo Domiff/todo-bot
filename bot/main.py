@@ -1,8 +1,9 @@
 import asyncio
 
+from aiogram.filters import ExceptionTypeFilter
 from aiogram_dialog import setup_dialogs
 
-from bot.auth import register_router
+from bot.auth import TokenExpired, register_router, token_expired
 from bot.core.logging import setup_logging
 from bot.core.messaging.topology import TASK_QUEUE
 from bot.core.setup import create_bot, create_dispatcher
@@ -17,6 +18,7 @@ async def main():
 
     dp.include_router(register_router)
     dp.include_router(todo_router)
+    dp.errors.register(token_expired, ExceptionTypeFilter(TokenExpired))
 
     setup_dialogs(dp)
     task_events_handler = make_task_events_handler(bot)

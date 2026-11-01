@@ -1,5 +1,7 @@
 from aiogram.filters.state import State, StatesGroup
 
 
-class RegistrationState(StatesGroup):
-    confirm = State()
+class AuthState(StatesGroup):
+    choose = State()
+    username = State()
+    password = State()

@@ -119,7 +119,9 @@ class ReadHandlers:
     async def tasks_getter(dialog_manager: DialogManager, **kwargs):
         state = dialog_manager.middleware_data["state"]
         tokens = await state.get_data()
-        tasks = await todo_service.get_tasks(tokens["access"], tokens["refresh"], state)
+        tasks = await todo_service.get_tasks(
+            tokens.get("access"), tokens.get("refresh"), state
+        )
         return {"tasks": tasks}
 
     @staticmethod
@@ -127,7 +129,7 @@ class ReadHandlers:
         state = dialog_manager.middleware_data["state"]
         tokens = await state.get_data()
         categories = await todo_service.get_categories(
-            tokens["access"], tokens["refresh"], state
+            tokens.get("access"), tokens.get("refresh"), state
         )
         return {"categories": categories}
 

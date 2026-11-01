@@ -1,5 +1,5 @@
 from aiogram_dialog import Dialog
 
-from .windows import RegistrationWindows
+from .windows import AuthWindows
 
-register_dialog = Dialog(RegistrationWindows.confirm)
+auth_dialog = Dialog(AuthWindows.choose, AuthWindows.username, AuthWindows.password)

@@ -6,7 +6,9 @@ from bot.core.config import settings
 
 
 class AuthURL(StrEnum):
-    REGISTER = "auth/tg/register/"
+    REGISTER = "auth/register/"
+    TOKEN = "auth/token/"
+    TG_LINK = "auth/tg/link/"
     REFRESH = "auth/token/refresh/"
 
 
