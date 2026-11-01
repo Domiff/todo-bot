@@ -127,7 +127,8 @@ User-provided text is HTML-escaped because the bot uses `parse_mode=HTML`.
 If handling a message fails (unknown type, a payload that does not match the model, a Telegram
 error), the message is rejected without requeue and logged as `Failed to handle message` with its
 `message_id`, `routing_key` and the traceback. The consumer then continues with the next message.
-There is no dead letter queue yet, so a rejected message is dropped.
+RabbitMQ moves the rejected message to the `todo-bot.tasks.dlq` dead letter queue, configured in
+todo-infrastructure.
 
 The payload models are a copy of todo-api's contract, and all their fields are required: a message
 that lacks a field (for example, one published before the field was added) fails to parse and is
