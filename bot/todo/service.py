@@ -31,9 +31,9 @@ class TodoService:
         headers = {"Authorization": f"Bearer {access}"}
         async with self.client as client:
             data = await client.get(TodoURL.LIST, headers=headers)
-            if data[1] == 401 or not data:
+            if data[1] == 401:
                 headers = await auth_service.check_token(refresh, state)
-            data = await client.get(TodoURL.LIST, headers=headers)
+                data = await client.get(TodoURL.LIST, headers=headers)
             return data[0]
 
     async def get_categories(
