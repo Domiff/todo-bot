@@ -17,6 +17,8 @@ class TodoURL(StrEnum):
     CREATE = "api/tasks/"
     UPDATE = "api/tasks/"
     DELETE = "api/tasks/"
+    COMPLETE = "api/tasks/{pk}/complete/"
+    IN_PROGRESS = "api/tasks/{pk}/in-progress/"
     CATEGORIES = "api/categories/"
 
 

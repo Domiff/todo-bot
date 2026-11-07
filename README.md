@@ -16,9 +16,10 @@ the separate **todo-infrastructure** stack.
 ## Features
 
 - Registration and login with a username and password; the messages and prompts are deleted from the chat
-- View task list
+- View task list with status and completion time
 - Create a task (title, body, deadline, priority, optional category)
 - Edit a task (any field)
+- Mark a task as done or back in progress (`/update_task` → `status`, through the API's `complete` / `in-progress` actions)
 - Delete a task
 - Notifications in Telegram when a task is created, updated or deleted (events from todo-api via RabbitMQ)
 

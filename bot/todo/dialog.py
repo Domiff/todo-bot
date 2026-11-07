@@ -22,6 +22,7 @@ update_dialog = Dialog(
     UpdateWindows.priority,
     UpdateWindows.category,
     UpdateWindows.confirm,
+    UpdateWindows.status,
 )
 
 delete_dialog = Dialog(

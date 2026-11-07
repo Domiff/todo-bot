@@ -9,6 +9,7 @@ from bot.core.http import HttpClient, TodoURL, http_client
 
 PRIORITIES = {"low": 1, "middle": 2, "high": 3}
 PRIORITY_LABELS = {value: key.capitalize() for key, value in PRIORITIES.items()}
+STATUS_LABELS = {True: "Done", False: "In progress"}
 
 
 class TodoService:
@@ -59,6 +60,18 @@ class TodoService:
                 )
             return data
 
+    async def set_completed(
+        self, access: str, refresh: str, state: FSMContext, pk: int, completed: bool
+    ):
+        url = (TodoURL.COMPLETE if completed else TodoURL.IN_PROGRESS).format(pk=pk)
+        headers = {"Authorization": f"Bearer {access}"}
+        async with self.client as client:
+            data = await client.post(url, headers=headers)
+            if data[1] == 401:
+                headers = await auth_service.check_token(refresh, state)
+                data = await client.post(url, headers=headers)
+            return data
+
     async def delete_task(self, access: str, refresh: str, state: FSMContext, pk: int):
         headers = {"Authorization": f"Bearer {access}"}
         async with self.client as client:
@@ -82,6 +95,11 @@ class TodoService:
             created_at = datetime.fromisoformat(item["created_at"]).strftime(
                 "%d.%m.%Y %H:%M"
             )
+            completed_at = (
+                datetime.fromisoformat(item["completed_at"]).strftime("%d.%m.%Y %H:%M")
+                if item.get("completed_at")
+                else "-"
+            )
             messages.append(
                 Template(
                     f"{markdown.hbold('Title')}: $title\n"
@@ -89,7 +107,9 @@ class TodoService:
                     f"{markdown.hbold('Deadline')}: $deadline\n"
                     f"{markdown.hbold('Created_at')}: $created_at\n"
                     f"{markdown.hbold('Priority')}: $priority\n"
-                    f"{markdown.hbold('Category')}: $category\n",
+                    f"{markdown.hbold('Category')}: $category\n"
+                    f"{markdown.hbold('Status')}: $status\n"
+                    f"{markdown.hbold('Completed_at')}: $completed_at\n",
                 ).substitute(
                     title=item["title"],
                     deadline=deadline,
@@ -97,6 +117,8 @@ class TodoService:
                     created_at=created_at,
                     priority=PRIORITY_LABELS[item["priority"]],
                     category=item["category"] or "-",
+                    status=STATUS_LABELS[item["completed"]],
+                    completed_at=completed_at,
                 ),
             )
         return messages

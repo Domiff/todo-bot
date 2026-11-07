@@ -93,6 +93,7 @@ class UpdateWindows:
         Button(
             Const("category"), id="task_category", on_click=UpdateHandlers.choose_field
         ),
+        Button(Const("status"), id="task_status", on_click=UpdateHandlers.choose_field),
         state=UpdateState.choose_field,
     )
     title = Window(
@@ -160,6 +161,15 @@ class UpdateWindows:
         Const("Confirm updating task:"),
         Button(Const("Confirm"), id="confirm_update", on_click=UpdateHandlers.confirm),
         state=UpdateState.confirm,
+    )
+    status = Window(
+        Const("Choose a new status:"),
+        Button(Const("Done"), id="done", on_click=UpdateHandlers.edit_status),
+        Button(
+            Const("In progress"), id="in_progress", on_click=UpdateHandlers.edit_status
+        ),
+        Button(Const("Cancel"), id="cancel", on_click=UpdateHandlers.cancel),
+        state=UpdateState.status,
     )
 
 

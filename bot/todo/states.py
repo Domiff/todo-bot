@@ -23,6 +23,7 @@ class UpdateState(StatesGroup):
     priority = State()
     category = State()
     confirm = State()
+    status = State()
 
 
 class DeleteStates(StatesGroup):

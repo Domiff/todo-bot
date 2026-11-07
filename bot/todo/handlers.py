@@ -160,6 +160,8 @@ class UpdateHandlers:
                 await dialog_manager.switch_to(state=UpdateState.priority)
             case "task_category":
                 await dialog_manager.switch_to(state=UpdateState.category)
+            case "task_status":
+                await dialog_manager.switch_to(state=UpdateState.status)
 
     @staticmethod
     async def edit_title(
@@ -239,6 +241,23 @@ class UpdateHandlers:
             tokens.get("access"), tokens.get("refresh"), state, task, pk
         )
         await callback.message.answer("Task updated successfully.")
+        await dialog_manager.done()
+
+    @staticmethod
+    async def edit_status(
+        callback: CallbackQuery, button: Button, dialog_manager: DialogManager
+    ):
+        state: FSMContext = dialog_manager.middleware_data["state"]
+        tokens = await state.get_data()
+        pk = int(dialog_manager.dialog_data["task_id"])
+        await todo_service.set_completed(
+            tokens.get("access"),
+            tokens.get("refresh"),
+            state,
+            pk,
+            completed=button.widget_id == "done",
+        )
+        await callback.message.answer("Task status updated.")
         await dialog_manager.done()
 
     @staticmethod
