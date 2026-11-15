@@ -10,29 +10,21 @@ class TaskEventTypes(StrEnum):
     DELETED_EVENT = "todo.task.deleted.v1"
 
 
-class BaseTaskData(BaseModel):
+class ChangedVia(StrEnum):
+    WEB = "web"
+    TELEGRAM = "telegram"
+
+
+class TaskData(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-
-class TaskCreatedData(BaseTaskData):
     task_id: int
-    tg_id: int
+    user_id: int | None = None
+    tg_id: int | None
+    changed_via: ChangedVia = ChangedVia.WEB
     title: str
-    deadline: datetime
-
-
-class TaskUpdatedData(BaseTaskData):
-    task_id: int
-    tg_id: int
-    title: str
-    body: str
-    completed: bool
-    deadline: datetime
-    priority: int
-    category: str
-
-
-class TaskDeletedData(BaseTaskData):
-    task_id: int
-    tg_id: int
-    title: str
+    body: str = ""
+    completed: bool = False
+    deadline: datetime | None = None
+    priority: int = 2
+    category: str = ""

@@ -8,12 +8,7 @@ from aiogram_dialog.widgets.input import ManagedTextInput
 from aiogram_dialog.widgets.kbd import Button
 
 from bot.core.messaging.events import Event, get_event_type
-from bot.todo.events import (
-    TaskCreatedData,
-    TaskDeletedData,
-    TaskEventTypes,
-    TaskUpdatedData,
-)
+from bot.todo.events import ChangedVia, TaskData, TaskEventTypes
 from bot.todo.service import PRIORITIES, PRIORITY_LABELS, todo_service
 
 from .states import UpdateState
@@ -289,9 +284,17 @@ class DeleteHandlers:
         await dialog_manager.done()
 
 
+def should_notify(task: TaskData) -> bool:
+    return task.tg_id is not None and task.changed_via != ChangedVia.TELEGRAM
+
+
 def make_task_events_handler(bot: "Bot") -> "Handler":
     async def handle_task_created(body: bytes) -> None:
-        task = Event[TaskCreatedData].from_bytes(body).data
+        task = Event[TaskData].from_bytes(body).data
+
+        if not should_notify(task=task):
+            return
+
         text = (
             f"Task {html.escape(task.title)!r} was created\n"
             f"Deadline: {task.deadline:%d.%m.%Y %H:%M}"
@@ -299,7 +302,11 @@ def make_task_events_handler(bot: "Bot") -> "Handler":
         await bot.send_message(chat_id=task.tg_id, text=text)
 
     async def handle_task_updated(body: bytes) -> None:
-        task = Event[TaskUpdatedData].from_bytes(body).data
+        task = Event[TaskData].from_bytes(body).data
+
+        if not should_notify(task=task):
+            return
+
         status = "done" if task.completed else "in progress"
         text = (
             f"Task {html.escape(task.title)!r} was updated\n"
@@ -312,7 +319,11 @@ def make_task_events_handler(bot: "Bot") -> "Handler":
         await bot.send_message(chat_id=task.tg_id, text=text)
 
     async def handle_task_deleted(body: bytes) -> None:
-        task = Event[TaskDeletedData].from_bytes(body).data
+        task = Event[TaskData].from_bytes(body).data
+
+        if not should_notify(task=task):
+            return
+
         text = f"Task {html.escape(task.title)!r} was deleted\n"
         await bot.send_message(chat_id=task.tg_id, text=text)
 
