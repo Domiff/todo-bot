@@ -82,7 +82,8 @@ that is deleted after a successful login. The bot sends the password to todo-api
 Requests that carry a `tg_id` use the `X-Bot-Key` header. Login also links the Telegram account to the user. When tokens can no longer
 be refreshed, `check_token` raises `TokenExpired`, and the bot asks to send `/start`.
 
-All requests to todo-api carry `X-Client: Telegram`, so actions made in the bot do not produce notifications.
+All requests to todo-api carry `X-Client: Telegram`; todo-api marks the resulting events with
+`changed_via: "telegram"`, and the bot does not send notifications for them.
 
 ## Project structure
 
@@ -100,7 +101,7 @@ bot/
 │   ├── service.py      # TodoService: CRUD operations, prepare_message
 │   ├── handlers.py     # dialog handlers + make_task_events_handler (event dispatch)
 │   ├── consumers.py    # consume(handler, queue): reads a queue, acks/rejects and logs failures
-│   ├── events.py       # task event types and payloads (contract with todo-api)
+│   ├── events.py       # task event types and the TaskData payload (contract with todo-api)
 │   ├── dialog.py
 │   ├── router.py
 │   ├── states.py
@@ -137,20 +138,31 @@ Supported events:
 Messages are dispatched by the CloudEvents `type` field (`TaskEventTypes` in `bot/todo/events.py`).
 User-provided text is HTML-escaped because the bot uses `parse_mode=HTML`.
 
+todo-api publishes every task change, so the bot decides itself whether to notify
+(`should_notify` in `bot/todo/handlers.py`). A message is sent only when:
+
+- `tg_id` is not `null` (the user has linked Telegram), and
+- `changed_via` is not `telegram` (the change was not made in the bot itself).
+
+Skipped events are acknowledged and do not reach the dead letter queue.
+
 If handling a message fails (unknown type, a payload that does not match the model, a Telegram
 error), the message is rejected without requeue and logged as `Failed to handle message` with its
 `message_id`, `routing_key` and the traceback. The consumer then continues with the next message.
 RabbitMQ moves the rejected message to the `todo-bot.tasks.dlq` dead letter queue, configured in
 todo-infrastructure.
 
-The payload models are a copy of todo-api's contract, and all their fields are required: a message
-that lacks a field (for example, one published before the field was added) fails to parse and is
-rejected as described above.
+All three events carry the same payload, `TaskData` (a copy of todo-api's contract): `task_id`,
+`user_id`, `tg_id`, `changed_via`, `title`, `body`, `completed`, `deadline`, `priority`, `category`.
+Only `task_id`, `tg_id` and `title` are required. The other fields have defaults so that messages
+published in the older format (before todo-api started sending the full task) still parse; the
+defaults can be removed once no such messages are left in the queue. A message that lacks a
+required field fails to parse and is rejected as described above.
 
 To support a new event:
 
-1. Add its type to `TaskEventTypes` and its payload model to `bot/todo/events.py`
-   (must match todo-api).
+1. Add its type to `TaskEventTypes` in `bot/todo/events.py`; if it needs new fields, add them to
+   `TaskData` (must match todo-api).
 2. Add a handler and register it in the `handlers` dict in `make_task_events_handler`.
 3. If its routing key is not covered by the `tasks.#` binding, add a binding to
    `definitions.json` in todo-infrastructure.
