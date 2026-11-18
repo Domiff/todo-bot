@@ -7,7 +7,7 @@ Handler = Callable[[bytes], Awaitable[None]]
 logger = get_logger(name=__name__)
 
 
-async def consume(hanlder: Handler, queue_name: str):
+async def consume(handler: Handler, queue_name: str):
     channel = await get_channel()
     queue = await channel.get_queue(name=queue_name, ensure=False)
     await channel.set_qos(prefetch_count=10)
@@ -16,7 +16,7 @@ async def consume(hanlder: Handler, queue_name: str):
         async for message in iterator:
             try:
                 async with message.process():
-                    await hanlder(message.body)
+                    await handler(message.body)
             except Exception:
                 logger.exception(
                     "Failed to handle message",
